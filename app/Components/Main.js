@@ -18,7 +18,10 @@ var Main = React.createClass({
 			topic: "",
 			startYear: "",
 			endYear: "", /*Note how we added in this history state variable*/
-			results: []
+			results: [],
+			addTitle: "",
+			addURL: "",
+			addDate: ""
 		}
 	},
 
@@ -31,8 +34,16 @@ var Main = React.createClass({
 		})
 	},
 
+	addArticle: function(title, url, date) {
+		this.setState({
+			addTitle: title,
+			addURL: url,
+			addDate: date
+		})
+	},
+
 	componentDidUpdate: function(prevProps, prevState) {
-		if(prevState.topic != this.state.topic){
+		if(prevState.topic != this.state.topic) {
 			// console.log("UPDATED");
 			helpers.runQuery(this.state.topic, this.state.startYear, this.state.endYear)
 				.then(function(data) {
@@ -45,6 +56,9 @@ var Main = React.createClass({
 						})
 					}
 				}.bind(this))
+		}
+		if(prevState.addTitle != this.state.addTitle) {
+			
 		}
 	},
 
@@ -78,7 +92,7 @@ var Main = React.createClass({
 					<div className="col-md-1"></div>
 					<div className="col-md-10">
 
-						<Results results={this.state.results}/>
+						<Results results={this.state.results} addArticle={this.addArticle}/>
 
 					</div>
 					<div className="col-md-1"></div>

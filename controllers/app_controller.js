@@ -22,7 +22,7 @@ router.get('/articles/:query/:startYear/:endYear', function(req, res) {
 	console.log(queryURL);
 	return axios.get(queryURL)
 		.then(function(response) {
-			// console.log(response.data.response.docs[0].web_url);
+			console.log(response.data.response.docs[0]);
 			// res.send("Got Response!!!");
 			res.json(response.data.response.docs);
 		})

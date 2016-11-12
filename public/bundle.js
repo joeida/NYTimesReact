@@ -19778,7 +19778,10 @@
 				topic: "",
 				startYear: "",
 				endYear: "", /*Note how we added in this history state variable*/
-				results: []
+				results: [],
+				addTitle: "",
+				addURL: "",
+				addDate: ""
 			};
 		},
 
@@ -19788,6 +19791,14 @@
 				topic: topic,
 				startYear: startYear,
 				endYear: endYear
+			});
+		},
+
+		addArticle: function addArticle(title, url, date) {
+			this.setState({
+				addTitle: title,
+				addURL: url,
+				addDate: date
 			});
 		},
 
@@ -19805,6 +19816,7 @@
 					}
 				}.bind(this));
 			}
+			if (prevState.addTitle != this.state.addTitle) {}
 		},
 
 		// Here we render the function
@@ -19853,7 +19865,7 @@
 					React.createElement(
 						'div',
 						{ className: 'col-md-10' },
-						React.createElement(Results, { results: this.state.results })
+						React.createElement(Results, { results: this.state.results, addArticle: this.addArticle })
 					),
 					React.createElement('div', { className: 'col-md-1' })
 				),
@@ -20052,7 +20064,23 @@
 	var Results = React.createClass({
 		displayName: "Results",
 
-		// Here we render the function
+		// Here we set a generic state associated with the text being searched for
+		getInitialState: function getInitialState() {
+			return {
+				title: "",
+				url: "",
+				date: ""
+			};
+		},
+		handleArticle: function handleArticle(event) {
+			// this.props.addArticle('title', 'url', 'date');
+			var title = event.target.getAttribute('data-title');
+			var url = event.target.getAttribute('data-url');
+			var date = event.target.getAttribute('data-date');
+			this.props.addArticle(title, url, date);
+		},
+
+		//Here we render the function
 		render: function render() {
 
 			return React.createElement(
@@ -20069,21 +20097,43 @@
 				),
 				React.createElement(
 					"div",
-					{ className: "panel-body text-center", style: { 'height': '200px', 'overflow': 'scroll' } },
-					React.createElement(
-						"h4",
-						null,
-						"Article Results:"
-					),
+					{ className: "panel-body", style: { 'height': '200px', 'overflow': 'scroll' } },
 					this.props.results.map(function (results, i) {
 						return React.createElement(
-							"p",
-							{ key: i },
-							results.headline.main,
-							" - ",
-							results.web_url
+							"div",
+							{ className: "col-md-12", key: i },
+							React.createElement(
+								"div",
+								{ className: "col-md-11" },
+								React.createElement(
+									"p",
+									null,
+									'title: ' + results.headline.main
+								),
+								React.createElement(
+									"p",
+									null,
+									'url: ' + results.web_url
+								),
+								React.createElement(
+									"p",
+									null,
+									'date: ' + results.pub_date
+								),
+								React.createElement("br", null)
+							),
+							React.createElement(
+								"div",
+								{ className: "col-md-1" },
+								React.createElement(
+									"button",
+									{ type: "button", className: "btn btn-primary", "data-title": results.headline.main, "data-url": results.web_url, "data-date": results.pub_date, onClick: this.handleArticle },
+									"Save"
+								)
+							)
 						);
-					})
+					}, this),
+					";"
 				)
 			);
 		}

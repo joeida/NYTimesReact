@@ -3,8 +3,22 @@ var React = require('react');
 
 // This is the results component
 var Results = React.createClass({
-
-	// Here we render the function
+	// Here we set a generic state associated with the text being searched for
+	getInitialState: function(){
+		return {
+			title: "",
+			url: "",
+			date: ""
+		}
+	},
+	handleArticle: function(event){
+		// this.props.addArticle('title', 'url', 'date');
+		var title = event.target.getAttribute('data-title');
+		var url = event.target.getAttribute('data-url');
+		var date = event.target.getAttribute('data-date');
+		this.props.addArticle(title, url, date);
+	},
+	//Here we render the function
 	render: function(){
 
 		return(
@@ -13,15 +27,28 @@ var Results = React.createClass({
 				<div className="panel-heading">
 					<h3 className="panel-title text-center">Results</h3>
 				</div>
-				<div className="panel-body text-center" style={{'height': '200px', 'overflow': 'scroll'}}>
+				<div className="panel-body" style={{'height': '200px', 'overflow': 'scroll'}}>
 
-						<h4>Article Results:</h4>
 						{/* Here we use a map function to loop through an array in JSX*/}
 						{this.props.results.map(function(results, i)
 							{
-								return <p key={i}>{results.headline.main} - {results.web_url}</p>
-							}
-						)}
+								return(
+									<div className="col-md-12" key={i}>
+										<div className="col-md-11">
+											<p>{'title: ' + results.headline.main}</p>
+											<p>{'url: ' + results.web_url}</p>
+											<p>{'date: ' + results.pub_date}</p>
+											<br/>
+										</div>
+										<div className="col-md-1">
+											<button type="button" className="btn btn-primary" data-title={results.headline.main} data-url={results.web_url} data-date={results.pub_date} onClick={this.handleArticle}>
+												Save
+											</button>
+										</div>
+									</div>
+								)
+							},this
+						)};
 
 				</div>
 			</div>
