@@ -57,8 +57,11 @@ var Main = React.createClass({
 					}
 				}.bind(this))
 		}
-		if(prevState.addTitle != this.state.addTitle) {
-			
+		if(prevState.addTitle != this.state.addTitle && prevState.addURL != this.state.addURL && prevState.addDate != this.state.addDate) {
+			helpers.postHistory(this.state.addTitle, this.state.addURL, this.state.addDate)
+				.then(function(data) {
+					console.log(data);
+				}.bind(this))
 		}
 	},
 

@@ -47,7 +47,7 @@ var Results = React.createClass({
 										</div>
 									</div>
 								)
-							},this
+							}.bind(this)
 						)};
 
 				</div>

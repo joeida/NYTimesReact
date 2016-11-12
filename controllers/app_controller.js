@@ -19,10 +19,10 @@ router.get('/', function(req, res) {
 router.get('/articles/:query/:startYear/:endYear', function(req, res) {
 	var nytAPI = "f40707d94c2d4113b1ddd72a702be080";
 	var queryURL = "http://api.nytimes.com/svc/search/v2/articlesearch.json?api-key=" + nytAPI + "&q=" + req.params.query + "&begin_date=" + req.params.startYear + "0101&end_date=" + req.params.endYear + "1231";
-	console.log(queryURL);
+	// console.log(queryURL);
 	return axios.get(queryURL)
 		.then(function(response) {
-			console.log(response.data.response.docs[0]);
+			// console.log(response.data.response.docs[0]);
 			// res.send("Got Response!!!");
 			res.json(response.data.response.docs);
 		})
@@ -68,32 +68,21 @@ router.post('/api/saved/delete', function(req, res) {
 
 // replace the existing note of an article with a new one
 // or if no note exists for an article, make the posted note it's note.
-router.post('/api/saved/:id', function(req, res){
+router.post('/api/saved', function(req, res){
 	// create a new note and pass the req.body to the entry.
-	var newNote = new Note(req.body);
+	console.log(req.body);
+	var newArticle = new Article(req.body);
 
 	// and save the new note the db
-	newNote.save(function(err, doc){
+	newArticle.save(function(err, doc){
 		// log any errors
 		if(err){
 			console.log(err);
 		}
 		// otherwise
 		else {
-			// using the Article id passed in the id parameter of our url,
-			// prepare a query that finds the matching Article in our db
-			// and update it to make it's lone note the one we just saved
-			Article.findOneAndUpdate({'_id': req.params.id}, {$push: {'note': doc._id}})
-			// execute the above query
-			.exec(function(err, doc){
-				// log any errors
-				if (err){
-					console.log(err);
-				} else {
-					// or send the document to the browser
-					res.send(doc);
-				}
-			});
+			console.log('Article Saved');
+			// res.send('Article Saved');
 		}
 	});
 });

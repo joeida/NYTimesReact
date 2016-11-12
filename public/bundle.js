@@ -19816,7 +19816,11 @@
 					}
 				}.bind(this));
 			}
-			if (prevState.addTitle != this.state.addTitle) {}
+			if (prevState.addTitle != this.state.addTitle && prevState.addURL != this.state.addURL && prevState.addDate != this.state.addDate) {
+				helpers.postHistory(this.state.addTitle, this.state.addURL, this.state.addDate).then(function (data) {
+					console.log(data);
+				}.bind(this));
+			}
 		},
 
 		// Here we render the function
@@ -20132,7 +20136,7 @@
 								)
 							)
 						);
-					}, this),
+					}.bind(this)),
 					";"
 				)
 			);
@@ -20171,8 +20175,22 @@
 		},
 
 		// This function posts new searches to our database.
-		postHistory: function postHistory(location) {
-			return axios.post('/api', { location: location }).then(function (results) {
+		postHistory: function postHistory(title, url, date) {
+			console.log(title, url, date);
+			var config = { headers: { 'Content-type': 'application/x-www-form-urlencoded' } };
+			return axios.post('/api/saved', { title: title, url: url, date: date }, config)
+			// return axios.post('/api/saved', {title: title, url: url, date: date}, config)
+			// return axios({
+			// 	url: '/api/saved',
+			// 	method: 'post',
+			// 	headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+			// 	data: {
+			// 		title: title,
+			// 		url: url,
+			// 		date: date
+			// 		}
+			// 	})
+			.then(function (results) {
 				console.log("Posted to MongoDB");
 				return results;
 			});
