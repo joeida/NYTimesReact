@@ -19972,7 +19972,7 @@
 							React.createElement(
 								'button',
 								{ type: 'button', className: 'btn btn-primary', 'data-title': this.props.addObj.title, 'data-url': this.props.addObj.url, 'data-date': this.props.addObj.date, onClick: this.removeArticle },
-								'Save'
+								'Remove'
 							)
 						)
 					)

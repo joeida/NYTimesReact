@@ -15,7 +15,7 @@ var ArticleSchema = new Schema({
   },
   // date
   date: {
-    type:String
+    type:Date
   }
 });
 
