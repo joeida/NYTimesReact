@@ -4,8 +4,9 @@ var React = require('react');
 // This is the history component. It will be used to show a log of  recent searches.
 var Saved = React.createClass({
 	handleRemove: function(event){
-		// this.props.addArticle('title', 'url', 'date');
+		console.log("REMOVE CLICKED");
 		var url = event.target.getAttribute('data-url');
+		console.log(url);
 		this.props.removeArticle(url);
 	},
 	// Here we render the function
@@ -28,7 +29,7 @@ var Saved = React.createClass({
 										<br/>
 									</div>
 									<div className="col-md-1">
-										<button type="button" className="btn btn-primary" data-url={results.web_url} onClick={this.handeRemove}>
+										<button type="button" className="btn btn-primary" data-url={results.url} onClick={this.handleRemove}>
 											Delete
 										</button>
 									</div>

@@ -43,7 +43,11 @@ router.get('/api/saved', function(req, res){
 });
 
 router.post('/api/delete', function(req, res) {
-	var url = req.body.url;
+	console.log(req.body);
+	var objKeyList = Object.keys(req.body);
+	var objKey = JSON.parse(objKeyList[0]);
+	console.log(objKey);
+	var url = objKey.url;
     Article.find({url: url}).remove().exec();
 	res.send(req.body.url);
 });

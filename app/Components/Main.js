@@ -45,7 +45,7 @@ var Main = React.createClass({
 		})
 	},
 
-	removeArticle: function(title, url, date) {
+	removeArticle: function(url) {
 		this.setState({
 			removeURL: url
 		})

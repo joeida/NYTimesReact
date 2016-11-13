@@ -19805,7 +19805,7 @@
 			});
 		},
 
-		removeArticle: function removeArticle(title, url, date) {
+		removeArticle: function removeArticle(url) {
 			this.setState({
 				removeURL: url
 			});
@@ -19934,8 +19934,9 @@
 		displayName: 'Saved',
 
 		handleRemove: function handleRemove(event) {
-			// this.props.addArticle('title', 'url', 'date');
+			console.log("REMOVE CLICKED");
 			var url = event.target.getAttribute('data-url');
+			console.log(url);
 			this.props.removeArticle(url);
 		},
 
@@ -19985,7 +19986,7 @@
 								{ className: 'col-md-1' },
 								React.createElement(
 									'button',
-									{ type: 'button', className: 'btn btn-primary', 'data-url': results.web_url, onClick: this.handeRemove },
+									{ type: 'button', className: 'btn btn-primary', 'data-url': results.url, onClick: this.handleRemove },
 									'Delete'
 								)
 							)
