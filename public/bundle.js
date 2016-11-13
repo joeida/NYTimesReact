@@ -19813,11 +19813,7 @@
 
 		componentDidUpdate: function componentDidUpdate(prevProps, prevState) {
 			if (prevState.topic != this.state.topic) {
-				// console.log("UPDATED");
 				helpers.runQuery(this.state.topic, this.state.startYear, this.state.endYear).then(function (data) {
-					for (var i = 0; i < data.length; i++) {
-						console.log(data[i].web_url);
-					}
 					if (data != this.state.results) {
 						this.setState({
 							results: data
@@ -19827,14 +19823,12 @@
 			}
 			if (prevState.addTitle != this.state.addTitle && prevState.addURL != this.state.addURL && prevState.addDate != this.state.addDate) {
 				helpers.postHistory(this.state.addTitle, this.state.addURL, this.state.addDate).then(function (data) {
-					console.log(data.data);
 					this.setState({
 						addObj: data.data
 					});
 				}.bind(this)).then(function (data) {
 					helpers.getHistory().then(function (response) {
 						if (response != this.state.history) {
-							console.log("History", response.data);
 							this.setState({
 								history: response.data
 							});
@@ -19844,11 +19838,8 @@
 			}
 			if (prevState.removeURL != this.state.removeURL) {
 				helpers.deleteHistory(this.state.removeURL).then(function (data) {
-					console.log(data.data);
-				}.bind(this)).then(function (data) {
 					helpers.getHistory().then(function (response) {
 						if (response != this.state.history) {
-							console.log("History", response.data);
 							this.setState({
 								history: response.data
 							});
@@ -19861,8 +19852,6 @@
 			// Get the latest history.
 			helpers.getHistory().then(function (response) {
 				if (response != this.state.history) {
-					console.log("History", response.data);
-
 					this.setState({
 						history: response.data
 					});
@@ -19952,9 +19941,7 @@
 		displayName: 'Saved',
 
 		handleRemove: function handleRemove(event) {
-			console.log("REMOVE CLICKED");
 			var url = event.target.getAttribute('data-url');
-			console.log(url);
 			this.props.removeArticle(url);
 		},
 
@@ -19974,7 +19961,7 @@
 				),
 				React.createElement(
 					'div',
-					{ className: 'panel-body text-center', style: { 'height': '200px', 'overflow': 'scroll' } },
+					{ className: 'panel-body', style: { 'height': '200px', 'overflow': 'scroll' } },
 					this.props.history.map(function (results, i) {
 						return React.createElement(
 							'div',
@@ -20013,8 +20000,7 @@
 								)
 							)
 						);
-					}.bind(this)),
-					';'
+					}.bind(this))
 				)
 			);
 		}
@@ -20208,8 +20194,7 @@
 								)
 							)
 						);
-					}.bind(this)),
-					';'
+					}.bind(this))
 				)
 			);
 		}
@@ -20233,7 +20218,6 @@
 		// This function serves our purpose of running the query to nyt.
 		runQuery: function runQuery(query, startYear, endYear) {
 			return axios.get('/articles/' + query + '/' + startYear + '/' + endYear).then(function (response) {
-				// console.log("Returned Response: " + response.data[0].web_url);
 				return response.data;
 			});
 		},
@@ -20241,27 +20225,22 @@
 		// This function hits our own server to retrieve the record of query results
 		getHistory: function getHistory() {
 			return axios.get('/api/saved/').then(function (response) {
-				console.log(response);
 				return response;
 			});
 		},
 
 		// This function posts new searches to our database.
 		postHistory: function postHistory(title, url, date) {
-			console.log(title, url, date);
 			var config = { headers: { 'Content-type': 'application/x-www-form-urlencoded' } };
 			return axios.post('/api/saved/', { title: title, url: url, date: date }, config).then(function (results) {
-				console.log("Posted to MongoDB");
 				return results;
 			});
 		},
 
 		// This function deletes saved Article posts.
 		deleteHistory: function deleteHistory(url) {
-			console.log(url);
 			var config = { headers: { 'Content-type': 'application/x-www-form-urlencoded' } };
 			return axios.post('/api/delete/', { url: url }, config).then(function (results) {
-				console.log("Deleted From MongoDB");
 				return results;
 			});
 		}

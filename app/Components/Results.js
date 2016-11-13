@@ -40,7 +40,7 @@ var Results = React.createClass({
 								</div>
 							)
 						}.bind(this)
-					)};
+					)}
 				</div>
 			</div>
 		)

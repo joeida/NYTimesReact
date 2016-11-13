@@ -53,12 +53,8 @@ var Main = React.createClass({
 
 	componentDidUpdate: function(prevProps, prevState) {
 		if(prevState.topic != this.state.topic) {
-			// console.log("UPDATED");
 			helpers.runQuery(this.state.topic, this.state.startYear, this.state.endYear)
 				.then(function(data) {
-					for (var i = 0; i < data.length; i++) {
-						console.log(data[i].web_url);
-					}
 					if (data != this.state.results) {
 						this.setState({
 							results: data
@@ -69,7 +65,6 @@ var Main = React.createClass({
 		if(prevState.addTitle != this.state.addTitle && prevState.addURL != this.state.addURL && prevState.addDate != this.state.addDate) {
 			helpers.postHistory(this.state.addTitle, this.state.addURL, this.state.addDate)
 				.then(function(data) {
-					console.log(data.data);
 					this.setState({
 						addObj: data.data
 					})
@@ -78,7 +73,6 @@ var Main = React.createClass({
 					helpers.getHistory()
 						.then(function(response){
 							if (response != this.state.history){
-								console.log ("History", response.data);
 								this.setState({
 									history: response.data
 								})
@@ -89,13 +83,9 @@ var Main = React.createClass({
 		if(prevState.removeURL != this.state.removeURL) {
 			helpers.deleteHistory(this.state.removeURL)
 				.then(function(data) {
-					console.log(data.data);
-				}.bind(this))
-				.then(function(data) {
 					helpers.getHistory()
 						.then(function(response){
 							if (response != this.state.history){
-								console.log ("History", response.data);
 								this.setState({
 									history: response.data
 								})
@@ -109,8 +99,6 @@ var Main = React.createClass({
 	helpers.getHistory()
 		.then(function(response){
 			if (response != this.state.history){
-				console.log ("History", response.data);
-
 				this.setState({
 					history: response.data
 				})

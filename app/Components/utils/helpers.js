@@ -8,7 +8,6 @@ var helpers = {
 	runQuery: function(query, startYear, endYear) {
 		return axios.get('/articles/' + query + '/' + startYear + '/' + endYear)
 			.then(function(response){
-				// console.log("Returned Response: " + response.data[0].web_url);
 				return response.data;
 		})
 	},
@@ -17,29 +16,24 @@ var helpers = {
 	getHistory: function() {
 		return axios.get('/api/saved/')
 			.then(function(response){
-				console.log(response);
 				return response;
 			});
 	},
 
 	// This function posts new searches to our database.
 	postHistory: function(title, url, date) {
-		console.log(title, url, date);
 		var config = { headers: { 'Content-type': 'application/x-www-form-urlencoded' } };
 		return axios.post('/api/saved/', {title: title, url: url, date: date}, config)
 			.then(function(results){
-				console.log("Posted to MongoDB");
 				return(results);
 			});
 	},
 
 	// This function deletes saved Article posts.
 	deleteHistory: function(url) {
-		console.log(url);
 		var config = { headers: { 'Content-type': 'application/x-www-form-urlencoded' } };
 		return axios.post('/api/delete/', {url: url}, config)
 			.then(function(results){
-				console.log("Deleted From MongoDB");
 				return(results);
 			});
 

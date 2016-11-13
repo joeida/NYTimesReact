@@ -2,9 +2,9 @@
   "name": "nytreact",
   "version": "1.0.0",
   "description": "",
-  "main": "public/index.html",
+  "main": "server.js",
   "scripts": {
-    "start": "nodemon ./bin/www"
+    "start": "node ./bin/www"
   },
   "author": "",
   "license": "ISC",

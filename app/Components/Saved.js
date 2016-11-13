@@ -4,9 +4,7 @@ var React = require('react');
 // This is the history component. It will be used to show a log of  recent searches.
 var Saved = React.createClass({
 	handleRemove: function(event){
-		console.log("REMOVE CLICKED");
 		var url = event.target.getAttribute('data-url');
-		console.log(url);
 		this.props.removeArticle(url);
 	},
 	// Here we render the function
@@ -16,7 +14,7 @@ var Saved = React.createClass({
 				<div className="panel-heading">
 					<h3 className="panel-title text-center">Saved Articles</h3>
 				</div>
-				<div className="panel-body text-center" style={{'height': '200px', 'overflow': 'scroll'}}>
+				<div className="panel-body" style={{'height': '200px', 'overflow': 'scroll'}}>
 					{/* Here we use a map function to loop through an array in JSX*/}
 					{this.props.history.map(function(results, i)
 						{
@@ -36,7 +34,7 @@ var Saved = React.createClass({
 								</div>
 							)
 						}.bind(this)
-					)};
+					)}
 				</div>
 			</div>
 		)
