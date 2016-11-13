@@ -49,7 +49,7 @@ router.post('/api/delete', function(req, res) {
 	console.log(objKey);
 	var url = objKey.url;
     Article.find({url: url}).remove().exec();
-	res.send(req.body.url);
+	res.json(objKey);
 });
 
 // replace the existing note of an article with a new one

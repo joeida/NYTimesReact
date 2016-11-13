@@ -19831,11 +19831,29 @@
 					this.setState({
 						addObj: data.data
 					});
+				}.bind(this)).then(function (data) {
+					helpers.getHistory().then(function (response) {
+						if (response != this.state.history) {
+							console.log("History", response.data);
+							this.setState({
+								history: response.data
+							});
+						}
+					}.bind(this));
 				}.bind(this));
 			}
 			if (prevState.removeURL != this.state.removeURL) {
 				helpers.deleteHistory(this.state.removeURL).then(function (data) {
 					console.log(data.data);
+				}.bind(this)).then(function (data) {
+					helpers.getHistory().then(function (response) {
+						if (response != this.state.history) {
+							console.log("History", response.data);
+							this.setState({
+								history: response.data
+							});
+						}
+					}.bind(this));
 				}.bind(this));
 			}
 		},
