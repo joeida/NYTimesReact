@@ -21,26 +21,26 @@ var Results = React.createClass({
 				</div>
 				<div className="panel-body" style={{'height': '200px', 'overflow': 'scroll'}}>
 
-						{/* Here we use a map function to loop through an array in JSX*/}
-						{this.props.results.map(function(results, i)
-							{
-								return(
-									<div className="col-md-12" key={i}>
-										<div className="col-md-11">
-											<p>{'title: ' + results.headline.main}</p>
-											<p>{'url: ' + results.web_url}</p>
-											<p>{'date: ' + results.pub_date}</p>
-											<br/>
-										</div>
-										<div className="col-md-1">
-											<button type="button" className="btn btn-primary" data-title={results.headline.main} data-url={results.web_url} data-date={results.pub_date} onClick={this.handleArticle}>
-												Save
-											</button>
-										</div>
+					{/* Here we use a map function to loop through an array in JSX*/}
+					{this.props.results.map(function(results, i)
+						{
+							return(
+								<div className="col-md-12" key={i}>
+									<div className="col-md-11">
+										<p>{'title: ' + results.headline.main}</p>
+										<p>{'url: ' + results.web_url}</p>
+										<p>{'date: ' + results.pub_date}</p>
+										<br/>
 									</div>
-								)
-							}.bind(this)
-						)};
+									<div className="col-md-1">
+										<button type="button" className="btn btn-primary" data-title={results.headline.main} data-url={results.web_url} data-date={results.pub_date} onClick={this.handleArticle}>
+											Save
+										</button>
+									</div>
+								</div>
+							)
+						}.bind(this)
+					)};
 				</div>
 			</div>
 		)

@@ -19783,9 +19783,8 @@
 				addURL: "",
 				addDate: "",
 				addObj: {},
-				removeTitle: "",
 				removeURL: "",
-				removeDate: ""
+				history: []
 			};
 		},
 
@@ -19808,9 +19807,7 @@
 
 		removeArticle: function removeArticle(title, url, date) {
 			this.setState({
-				removeTitle: title,
-				removeURL: url,
-				removeDate: date
+				removeURL: url
 			});
 		},
 
@@ -19836,6 +19833,23 @@
 					});
 				}.bind(this));
 			}
+			if (prevState.removeURL != this.state.removeURL) {
+				helpers.deleteHistory(this.state.removeURL).then(function (data) {
+					console.log(data.data);
+				}.bind(this));
+			}
+		},
+		componentDidMount: function componentDidMount() {
+			// Get the latest history.
+			helpers.getHistory().then(function (response) {
+				if (response != this.state.history) {
+					console.log("History", response.data);
+
+					this.setState({
+						history: response.data
+					});
+				}
+			}.bind(this));
 		},
 
 		// Here we render the function
@@ -19895,7 +19909,7 @@
 					React.createElement(
 						'div',
 						{ className: 'col-md-10' },
-						React.createElement(Saved, { addObj: this.state.addObj, removeArticle: this.removeArticle })
+						React.createElement(Saved, { history: this.state.history, removeArticle: this.removeArticle })
 					),
 					React.createElement('div', { className: 'col-md-1' })
 				)
@@ -19919,13 +19933,12 @@
 	var Saved = React.createClass({
 		displayName: 'Saved',
 
-		removeArticle: function removeArticle(event) {
+		handleRemove: function handleRemove(event) {
 			// this.props.addArticle('title', 'url', 'date');
-			var title = event.target.getAttribute('data-title');
 			var url = event.target.getAttribute('data-url');
-			var date = event.target.getAttribute('data-date');
-			this.props.removeArticle(title, url, date);
+			this.props.removeArticle(url);
 		},
+
 		// Here we render the function
 		render: function render() {
 			return React.createElement(
@@ -19943,39 +19956,42 @@
 				React.createElement(
 					'div',
 					{ className: 'panel-body text-center', style: { 'height': '200px', 'overflow': 'scroll' } },
-					React.createElement(
-						'div',
-						{ className: 'col-md-12' },
-						React.createElement(
+					this.props.history.map(function (results, i) {
+						return React.createElement(
 							'div',
-							{ className: 'col-md-11' },
+							{ className: 'col-md-12', key: i },
 							React.createElement(
-								'p',
-								null,
-								'title: ' + this.props.addObj.title
+								'div',
+								{ className: 'col-md-11' },
+								React.createElement(
+									'p',
+									null,
+									'title: ' + results.title
+								),
+								React.createElement(
+									'p',
+									null,
+									'url: ' + results.url
+								),
+								React.createElement(
+									'p',
+									null,
+									'date: ' + results.date
+								),
+								React.createElement('br', null)
 							),
 							React.createElement(
-								'p',
-								null,
-								'url: ' + this.props.addObj.url
-							),
-							React.createElement(
-								'p',
-								null,
-								'date: ' + this.props.addObj.date
-							),
-							React.createElement('br', null)
-						),
-						React.createElement(
-							'div',
-							{ className: 'col-md-1' },
-							React.createElement(
-								'button',
-								{ type: 'button', className: 'btn btn-primary', 'data-title': this.props.addObj.title, 'data-url': this.props.addObj.url, 'data-date': this.props.addObj.date, onClick: this.removeArticle },
-								'Remove'
+								'div',
+								{ className: 'col-md-1' },
+								React.createElement(
+									'button',
+									{ type: 'button', className: 'btn btn-primary', 'data-url': results.web_url, onClick: this.handeRemove },
+									'Delete'
+								)
 							)
-						)
-					)
+						);
+					}.bind(this)),
+					';'
 				)
 			);
 		}
@@ -20194,7 +20210,7 @@
 
 		// This function hits our own server to retrieve the record of query results
 		getHistory: function getHistory() {
-			return axios.get('/api').then(function (response) {
+			return axios.get('/api/saved/').then(function (response) {
 				console.log(response);
 				return response;
 			});
@@ -20203,22 +20219,19 @@
 		// This function posts new searches to our database.
 		postHistory: function postHistory(title, url, date) {
 			console.log(title, url, date);
-			// var config = { headers: { 'Content-type': 'application/json', 'Accept': 'application/json' } };
 			var config = { headers: { 'Content-type': 'application/x-www-form-urlencoded' } };
-			return axios.post('/api/saved/', { title: title, url: url, date: date }, config)
-			// return axios.post('/api/saved/', {title: title, url: url, date: date}, config)
-			// return axios({
-			// 	url: '/api/saved',
-			// 	method: 'post',
-			// 	headers: {'Content-Type': 'application/x-www-form-urlencoded'},
-			// 	data: {
-			// 		title: title,
-			// 		url: url,
-			// 		date: date
-			// 		}
-			// 	})
-			.then(function (results) {
+			return axios.post('/api/saved/', { title: title, url: url, date: date }, config).then(function (results) {
 				console.log("Posted to MongoDB");
+				return results;
+			});
+		},
+
+		// This function deletes saved Article posts.
+		deleteHistory: function deleteHistory(url) {
+			console.log(url);
+			var config = { headers: { 'Content-type': 'application/x-www-form-urlencoded' } };
+			return axios.post('/api/delete/', { url: url }, config).then(function (results) {
+				console.log("Deleted From MongoDB");
 				return results;
 			});
 		}

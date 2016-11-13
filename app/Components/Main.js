@@ -23,9 +23,8 @@ var Main = React.createClass({
 			addURL: "",
 			addDate: "",
 			addObj: {},
-			removeTitle: "",
 			removeURL: "",
-			removeDate: ""
+			history: []
 		}
 	},
 
@@ -48,9 +47,7 @@ var Main = React.createClass({
 
 	removeArticle: function(title, url, date) {
 		this.setState({
-			removeTitle: title,
-			removeURL: url,
-			removeDate: date
+			removeURL: url
 		})
 	},
 
@@ -78,6 +75,25 @@ var Main = React.createClass({
 					})
 				}.bind(this))
 		}
+		if(prevState.removeURL != this.state.removeURL) {
+			helpers.deleteHistory(this.state.removeURL)
+				.then(function(data) {
+					console.log(data.data);
+				}.bind(this))
+		}
+	},
+	componentDidMount: function(){
+	// Get the latest history.
+	helpers.getHistory()
+		.then(function(response){
+			if (response != this.state.history){
+				console.log ("History", response.data);
+
+				this.setState({
+					history: response.data
+				})
+			}
+		}.bind(this))
 	},
 
 	// Here we render the function
@@ -120,7 +136,7 @@ var Main = React.createClass({
 					<div className="col-md-1"></div>
 					<div className="col-md-10">
 
-						<Saved addObj={this.state.addObj} removeArticle={this.removeArticle}/>
+						<Saved history={this.state.history} removeArticle={this.removeArticle}/>
 
 					</div>
 					<div className="col-md-1"></div>
