@@ -4,7 +4,10 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "start": "node ./bin/www"
+    "build": "./node_modules/.bin/webpack",
+    "server": "node ./bin/www",
+    "start": "npm run build && npm run server",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
