@@ -20055,6 +20055,9 @@
 		handleClick: function handleClick() {
 			// Set the parent to have the search term
 			this.props.setSearch(this.state.topic, this.state.startYear, this.state.endYear);
+			this.refs.topic.value = '';
+			this.refs.startYear.value = '';
+			this.refs.endYear.value = '';
 		},
 		// Here we render the function
 		render: function render() {
@@ -20089,7 +20092,7 @@
 									"Topic"
 								)
 							),
-							React.createElement("input", { type: "text", className: "form-control text-center", id: "topic", onChange: this.handleChange, required: true }),
+							React.createElement("input", { type: "text", className: "form-control text-center", id: "topic", onChange: this.handleChange, ref: "topic", required: true }),
 							React.createElement("br", null),
 							React.createElement(
 								"h4",
@@ -20100,7 +20103,7 @@
 									"Start Year"
 								)
 							),
-							React.createElement("input", { type: "text", className: "form-control text-center", id: "startYear", onChange: this.handleChange, required: true }),
+							React.createElement("input", { type: "text", className: "form-control text-center", id: "startYear", onChange: this.handleChange, ref: "startYear", required: true }),
 							React.createElement("br", null),
 							React.createElement(
 								"h4",
@@ -20111,7 +20114,7 @@
 									"End Year"
 								)
 							),
-							React.createElement("input", { type: "text", className: "form-control text-center", id: "endYear", onChange: this.handleChange, required: true }),
+							React.createElement("input", { type: "text", className: "form-control text-center", id: "endYear", onChange: this.handleChange, ref: "endYear", required: true }),
 							React.createElement("br", null),
 							React.createElement(
 								"button",

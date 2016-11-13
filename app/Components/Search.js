@@ -22,6 +22,9 @@ var Search = React.createClass({
 	handleClick: function(){
 		// Set the parent to have the search term
 		this.props.setSearch(this.state.topic, this.state.startYear, this.state.endYear);
+		this.refs.topic.value = '';
+		this.refs.startYear.value = '';
+		this.refs.endYear.value = '';
 	},
 	// Here we render the function
 	render: function(){
@@ -37,15 +40,15 @@ var Search = React.createClass({
 							<div className="form-group">
 								<h4 className=""><strong>Topic</strong></h4>
 
-								<input type="text" className="form-control text-center" id="topic" onChange= {this.handleChange} required/>
+								<input type="text" className="form-control text-center" id="topic" onChange= {this.handleChange} ref="topic" required/>
 								<br />
 								<h4 className=""><strong>Start Year</strong></h4>
 
-								<input type="text" className="form-control text-center" id="startYear" onChange= {this.handleChange} required/>
+								<input type="text" className="form-control text-center" id="startYear" onChange= {this.handleChange} ref="startYear" required/>
 								<br />
 								<h4 className=""><strong>End Year</strong></h4>
 
-								<input type="text" className="form-control text-center" id="endYear" onChange= {this.handleChange} required/>
+								<input type="text" className="form-control text-center" id="endYear" onChange= {this.handleChange} ref="endYear" required/>
 								<br />
 								<button type="button" className="btn btn-primary" onClick={this.handleClick}>Search</button>
 							</div>
