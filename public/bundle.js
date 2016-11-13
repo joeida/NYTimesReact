@@ -19988,9 +19988,13 @@
 									'title: ' + results.title
 								),
 								React.createElement(
-									'p',
-									null,
-									'url: ' + results.url
+									'a',
+									{ href: results.url, target: '_blank' },
+									React.createElement(
+										'p',
+										null,
+										'url: ' + results.url
+									)
 								),
 								React.createElement(
 									'p',
@@ -20176,9 +20180,13 @@
 									'title: ' + results.headline.main
 								),
 								React.createElement(
-									'p',
-									null,
-									'url: ' + results.web_url
+									'a',
+									{ href: results.web_url, target: '_blank' },
+									React.createElement(
+										'p',
+										null,
+										'url: ' + results.web_url
+									)
 								),
 								React.createElement(
 									'p',

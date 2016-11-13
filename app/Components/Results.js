@@ -28,7 +28,7 @@ var Results = React.createClass({
 								<div className="col-md-12" key={i}>
 									<div className="col-md-11">
 										<p>{'title: ' + results.headline.main}</p>
-										<p>{'url: ' + results.web_url}</p>
+										<a href={results.web_url} target="_blank"><p>{'url: ' + results.web_url}</p></a>
 										<p>{'date: ' + results.pub_date}</p>
 										<br/>
 									</div>

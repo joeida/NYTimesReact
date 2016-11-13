@@ -24,7 +24,7 @@ var Saved = React.createClass({
 								<div className="col-md-12" key={i}>
 									<div className="col-md-11">
 										<p>{'title: ' + results.title}</p>
-										<p>{'url: ' + results.url}</p>
+										<a href={results.url} target="_blank"><p>{'url: ' + results.url}</p></a>
 										<p>{'date: ' + results.date}</p>
 										<br/>
 									</div>
