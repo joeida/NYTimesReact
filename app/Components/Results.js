@@ -3,14 +3,6 @@ var React = require('react');
 
 // This is the results component
 var Results = React.createClass({
-	// Here we set a generic state associated with the text being searched for
-	getInitialState: function(){
-		return {
-			title: "",
-			url: "",
-			date: ""
-		}
-	},
 	handleArticle: function(event){
 		// this.props.addArticle('title', 'url', 'date');
 		var title = event.target.getAttribute('data-title');
@@ -49,10 +41,8 @@ var Results = React.createClass({
 								)
 							}.bind(this)
 						)};
-
 				</div>
 			</div>
-
 		)
 	}
 });

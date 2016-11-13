@@ -25,9 +25,10 @@ var helpers = {
 	// This function posts new searches to our database.
 	postHistory: function(title, url, date){
 		console.log(title, url, date);
+		// var config = { headers: { 'Content-type': 'application/json', 'Accept': 'application/json' } };
 		var config = { headers: { 'Content-type': 'application/x-www-form-urlencoded' } };
-		return axios.post('/api/saved', {title: title, url: url, date: date}, config)
-		// return axios.post('/api/saved', {title: title, url: url, date: date}, config)
+		return axios.post('/api/saved/', {title: title, url: url, date: date}, config)
+		// return axios.post('/api/saved/', {title: title, url: url, date: date}, config)
 		// return axios({
 		// 	url: '/api/saved',
 		// 	method: 'post',

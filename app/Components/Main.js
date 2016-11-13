@@ -21,7 +21,11 @@ var Main = React.createClass({
 			results: [],
 			addTitle: "",
 			addURL: "",
-			addDate: ""
+			addDate: "",
+			addObj: {},
+			removeTitle: "",
+			removeURL: "",
+			removeDate: ""
 		}
 	},
 
@@ -39,6 +43,14 @@ var Main = React.createClass({
 			addTitle: title,
 			addURL: url,
 			addDate: date
+		})
+	},
+
+	removeArticle: function(title, url, date) {
+		this.setState({
+			removeTitle: title,
+			removeURL: url,
+			removeDate: date
 		})
 	},
 
@@ -60,7 +72,10 @@ var Main = React.createClass({
 		if(prevState.addTitle != this.state.addTitle && prevState.addURL != this.state.addURL && prevState.addDate != this.state.addDate) {
 			helpers.postHistory(this.state.addTitle, this.state.addURL, this.state.addDate)
 				.then(function(data) {
-					console.log(data);
+					console.log(data.data);
+					this.setState({
+						addObj: data.data
+					})
 				}.bind(this))
 		}
 	},
@@ -105,7 +120,7 @@ var Main = React.createClass({
 					<div className="col-md-1"></div>
 					<div className="col-md-10">
 
-						<Saved topic={this.state.topic} startYear={this.state.startYear} endYear={this.state.endYear}/>
+						<Saved addObj={this.state.addObj} removeArticle={this.removeArticle}/>
 
 					</div>
 					<div className="col-md-1"></div>

@@ -19781,7 +19781,11 @@
 				results: [],
 				addTitle: "",
 				addURL: "",
-				addDate: ""
+				addDate: "",
+				addObj: {},
+				removeTitle: "",
+				removeURL: "",
+				removeDate: ""
 			};
 		},
 
@@ -19802,6 +19806,14 @@
 			});
 		},
 
+		removeArticle: function removeArticle(title, url, date) {
+			this.setState({
+				removeTitle: title,
+				removeURL: url,
+				removeDate: date
+			});
+		},
+
 		componentDidUpdate: function componentDidUpdate(prevProps, prevState) {
 			if (prevState.topic != this.state.topic) {
 				// console.log("UPDATED");
@@ -19818,7 +19830,10 @@
 			}
 			if (prevState.addTitle != this.state.addTitle && prevState.addURL != this.state.addURL && prevState.addDate != this.state.addDate) {
 				helpers.postHistory(this.state.addTitle, this.state.addURL, this.state.addDate).then(function (data) {
-					console.log(data);
+					console.log(data.data);
+					this.setState({
+						addObj: data.data
+					});
 				}.bind(this));
 			}
 		},
@@ -19880,7 +19895,7 @@
 					React.createElement(
 						'div',
 						{ className: 'col-md-10' },
-						React.createElement(Saved, { topic: this.state.topic, startYear: this.state.startYear, endYear: this.state.endYear })
+						React.createElement(Saved, { addObj: this.state.addObj, removeArticle: this.removeArticle })
 					),
 					React.createElement('div', { className: 'col-md-1' })
 				)
@@ -19895,48 +19910,71 @@
 /* 160 */
 /***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	'use strict';
 
 	// Include React
 	var React = __webpack_require__(1);
 
 	// This is the history component. It will be used to show a log of  recent searches.
 	var Saved = React.createClass({
-		displayName: "Saved",
+		displayName: 'Saved',
 
-
+		removeArticle: function removeArticle(event) {
+			// this.props.addArticle('title', 'url', 'date');
+			var title = event.target.getAttribute('data-title');
+			var url = event.target.getAttribute('data-url');
+			var date = event.target.getAttribute('data-date');
+			this.props.removeArticle(title, url, date);
+		},
 		// Here we render the function
 		render: function render() {
-
 			return React.createElement(
-				"div",
-				{ className: "panel panel-default" },
+				'div',
+				{ className: 'panel panel-default' },
 				React.createElement(
-					"div",
-					{ className: "panel-heading" },
+					'div',
+					{ className: 'panel-heading' },
 					React.createElement(
-						"h3",
-						{ className: "panel-title text-center" },
-						"Saved Articles"
+						'h3',
+						{ className: 'panel-title text-center' },
+						'Saved Articles'
 					)
 				),
 				React.createElement(
-					"div",
-					{ className: "panel-body text-center", style: { 'height': '200px', 'overflow': 'scroll' } },
+					'div',
+					{ className: 'panel-body text-center', style: { 'height': '200px', 'overflow': 'scroll' } },
 					React.createElement(
-						"p",
-						null,
-						this.props.topic
-					),
-					React.createElement(
-						"p",
-						null,
-						this.props.startYear
-					),
-					React.createElement(
-						"p",
-						null,
-						this.props.endYear
+						'div',
+						{ className: 'col-md-12' },
+						React.createElement(
+							'div',
+							{ className: 'col-md-11' },
+							React.createElement(
+								'p',
+								null,
+								'title: ' + this.props.addObj.title
+							),
+							React.createElement(
+								'p',
+								null,
+								'url: ' + this.props.addObj.url
+							),
+							React.createElement(
+								'p',
+								null,
+								'date: ' + this.props.addObj.date
+							),
+							React.createElement('br', null)
+						),
+						React.createElement(
+							'div',
+							{ className: 'col-md-1' },
+							React.createElement(
+								'button',
+								{ type: 'button', className: 'btn btn-primary', 'data-title': this.props.addObj.title, 'data-url': this.props.addObj.url, 'data-date': this.props.addObj.date, onClick: this.removeArticle },
+								'Save'
+							)
+						)
 					)
 				)
 			);
@@ -19970,19 +20008,15 @@
 		// This function will respond to the user input
 		handleChange: function handleChange(event) {
 			// Here we create syntax to capture any change in text to the query terms (pre-search).
-			// See this Stack Overflow answer for more details:
-			// http://stackoverflow.com/questions/21029999/react-js-identifying-different-inputs-with-one-onchange-handler
 			var newState = {};
 			newState[event.target.id] = event.target.value;
 			this.setState(newState);
 		},
 		// When a user submits...
 		handleClick: function handleClick() {
-			// console.log("CLICK")
 			// Set the parent to have the search term
 			this.props.setSearch(this.state.topic, this.state.startYear, this.state.endYear);
 		},
-
 		// Here we render the function
 		render: function render() {
 
@@ -20059,23 +20093,15 @@
 /* 162 */
 /***/ function(module, exports, __webpack_require__) {
 
-	"use strict";
+	'use strict';
 
 	// Include React
 	var React = __webpack_require__(1);
 
 	// This is the results component
 	var Results = React.createClass({
-		displayName: "Results",
+		displayName: 'Results',
 
-		// Here we set a generic state associated with the text being searched for
-		getInitialState: function getInitialState() {
-			return {
-				title: "",
-				url: "",
-				date: ""
-			};
-		},
 		handleArticle: function handleArticle(event) {
 			// this.props.addArticle('title', 'url', 'date');
 			var title = event.target.getAttribute('data-title');
@@ -20088,56 +20114,56 @@
 		render: function render() {
 
 			return React.createElement(
-				"div",
-				{ className: "panel panel-default" },
+				'div',
+				{ className: 'panel panel-default' },
 				React.createElement(
-					"div",
-					{ className: "panel-heading" },
+					'div',
+					{ className: 'panel-heading' },
 					React.createElement(
-						"h3",
-						{ className: "panel-title text-center" },
-						"Results"
+						'h3',
+						{ className: 'panel-title text-center' },
+						'Results'
 					)
 				),
 				React.createElement(
-					"div",
-					{ className: "panel-body", style: { 'height': '200px', 'overflow': 'scroll' } },
+					'div',
+					{ className: 'panel-body', style: { 'height': '200px', 'overflow': 'scroll' } },
 					this.props.results.map(function (results, i) {
 						return React.createElement(
-							"div",
-							{ className: "col-md-12", key: i },
+							'div',
+							{ className: 'col-md-12', key: i },
 							React.createElement(
-								"div",
-								{ className: "col-md-11" },
+								'div',
+								{ className: 'col-md-11' },
 								React.createElement(
-									"p",
+									'p',
 									null,
 									'title: ' + results.headline.main
 								),
 								React.createElement(
-									"p",
+									'p',
 									null,
 									'url: ' + results.web_url
 								),
 								React.createElement(
-									"p",
+									'p',
 									null,
 									'date: ' + results.pub_date
 								),
-								React.createElement("br", null)
+								React.createElement('br', null)
 							),
 							React.createElement(
-								"div",
-								{ className: "col-md-1" },
+								'div',
+								{ className: 'col-md-1' },
 								React.createElement(
-									"button",
-									{ type: "button", className: "btn btn-primary", "data-title": results.headline.main, "data-url": results.web_url, "data-date": results.pub_date, onClick: this.handleArticle },
-									"Save"
+									'button',
+									{ type: 'button', className: 'btn btn-primary', 'data-title': results.headline.main, 'data-url': results.web_url, 'data-date': results.pub_date, onClick: this.handleArticle },
+									'Save'
 								)
 							)
 						);
 					}.bind(this)),
-					";"
+					';'
 				)
 			);
 		}
@@ -20177,9 +20203,10 @@
 		// This function posts new searches to our database.
 		postHistory: function postHistory(title, url, date) {
 			console.log(title, url, date);
+			// var config = { headers: { 'Content-type': 'application/json', 'Accept': 'application/json' } };
 			var config = { headers: { 'Content-type': 'application/x-www-form-urlencoded' } };
-			return axios.post('/api/saved', { title: title, url: url, date: date }, config)
-			// return axios.post('/api/saved', {title: title, url: url, date: date}, config)
+			return axios.post('/api/saved/', { title: title, url: url, date: date }, config)
+			// return axios.post('/api/saved/', {title: title, url: url, date: date}, config)
 			// return axios({
 			// 	url: '/api/saved',
 			// 	method: 'post',

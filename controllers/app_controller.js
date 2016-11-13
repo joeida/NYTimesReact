@@ -71,7 +71,10 @@ router.post('/api/saved/delete', function(req, res) {
 router.post('/api/saved', function(req, res){
 	// create a new note and pass the req.body to the entry.
 	console.log(req.body);
-	var newArticle = new Article(req.body);
+	var objKeyList = Object.keys(req.body);
+	var objKey = JSON.parse(objKeyList[0]);
+	console.log(objKey);
+	var newArticle = new Article(objKey);
 
 	// and save the new note the db
 	newArticle.save(function(err, doc){
@@ -82,7 +85,7 @@ router.post('/api/saved', function(req, res){
 		// otherwise
 		else {
 			console.log('Article Saved');
-			// res.send('Article Saved');
+			res.json(objKey);
 		}
 	});
 });
