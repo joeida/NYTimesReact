@@ -7,6 +7,7 @@ var Article = require('../models/Article.js');
 var axios = require('axios');
 var request = require('request');
 var cheerio = require('cheerio');
+var safezones = require('../js/safezone');
 
 // Routes
 // ======
@@ -66,6 +67,20 @@ router.post('/api/saved', function(req, res){
 			res.json(objKey);
 		}
 	});
+});
+
+// get safezones
+router.post('/data/safezones', function(req, res) {
+	var objKeyList = Object.keys(req.body);
+	var objKey = JSON.parse(objKeyList[0]);
+    var locationObj = {
+        address: objKey.address,
+        lat: parseFloat(objKey.lat),
+        lng: parseFloat(objKey.lng)
+    }
+    safezones.getSafezonesList(locationObj, function(safezonesResultList) {
+        res.send(safezonesResultList);
+    });
 });
 
 module.exports = router;

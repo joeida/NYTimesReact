@@ -19763,9 +19763,11 @@
 	var Saved = __webpack_require__(160);
 	var Search = __webpack_require__(161);
 	var Results = __webpack_require__(162);
+	var Map = __webpack_require__(163);
+	var GoogleApiComponent = __webpack_require__(164);
 
 	// Helper Function
-	var helpers = __webpack_require__(163);
+	var helpers = __webpack_require__(166);
 
 	// This is the main component.
 	var Main = React.createClass({
@@ -19778,6 +19780,10 @@
 				topic: "",
 				startYear: "",
 				endYear: "", /*Note how we added in this history state variable*/
+				address: "",
+				lat: "",
+				lng: "",
+				mresults: [],
 				results: [],
 				addTitle: "",
 				addURL: "",
@@ -19797,6 +19803,14 @@
 			});
 		},
 
+		setMap: function setMap(address, lat, lng) {
+			this.setState({
+				address: address,
+				lat: lat,
+				lng: lng
+			});
+		},
+
 		addArticle: function addArticle(title, url, date) {
 			this.setState({
 				addTitle: title,
@@ -19812,6 +19826,18 @@
 		},
 
 		componentDidUpdate: function componentDidUpdate(prevProps, prevState) {
+			if (prevState.address != this.state.address && prevState.lat != this.state.lat && prevState.lng != this.state.lng) {
+				console.log(this.state.address, this.state.lat, this.state.lng);
+				helpers.getSafezones(this.state.address, this.state.lat, this.state.lng).then(function (data) {
+					if (data.data != this.state.mresults) {
+						this.setState({
+							mresults: data.data
+						});
+						console.log(this.state.mresults);
+					}
+					this.refs.child.generateMap();
+				}.bind(this));
+			}
 			if (prevState.topic != this.state.topic) {
 				helpers.runQuery(this.state.topic, this.state.startYear, this.state.endYear).then(function (data) {
 					if (data != this.state.results) {
@@ -19848,6 +19874,14 @@
 				}.bind(this));
 			}
 		},
+		componentWillMount: function componentWillMount() {
+			var script = document.createElement("script");
+
+			script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyBafXeEZdeN3wqsxir8ca5e8DhkMwuBmrI&callback=initMap";
+			script.async = true;
+
+			document.body.appendChild(script);
+		},
 		componentDidMount: function componentDidMount() {
 			// Get the latest history.
 			helpers.getHistory().then(function (response) {
@@ -19857,11 +19891,16 @@
 					});
 				}
 			}.bind(this));
+			// const script = document.createElement("script");
+			//
+			// script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyBafXeEZdeN3wqsxir8ca5e8DhkMwuBmrI&callback=initMap";
+			// script.async = true;
+			//
+			// document.body.appendChild(script);
 		},
 
 		// Here we render the function
 		render: function render() {
-
 			return React.createElement(
 				'div',
 				{ className: 'container' },
@@ -19894,7 +19933,18 @@
 					React.createElement(
 						'div',
 						{ className: 'col-md-10' },
-						React.createElement(Search, { setSearch: this.setSearch })
+						React.createElement(Search, { setSearch: this.setSearch, setMap: this.setMap })
+					),
+					React.createElement('div', { className: 'col-md-1' })
+				),
+				React.createElement(
+					'div',
+					{ className: 'row' },
+					React.createElement('div', { className: 'col-md-1' }),
+					React.createElement(
+						'div',
+						{ className: 'col-md-10' },
+						React.createElement(Map, { results: this.state.mresults, address: this.state.address, lat: this.state.lat, lng: this.state.lng, ref: 'child' })
 					),
 					React.createElement('div', { className: 'col-md-1' })
 				),
@@ -20027,7 +20077,10 @@
 			return {
 				topic: "",
 				startYear: "",
-				endYear: ""
+				endYear: "",
+				address: "",
+				lat: "",
+				lng: ""
 			};
 		},
 		// This function will respond to the user input
@@ -20044,6 +20097,9 @@
 			this.refs.topic.value = '';
 			this.refs.startYear.value = '';
 			this.refs.endYear.value = '';
+		},
+		handleMap: function handleMap() {
+			this.props.setMap(this.state.address, this.state.lat, this.state.lng);
 		},
 		// Here we render the function
 		render: function render() {
@@ -20106,6 +20162,44 @@
 								"button",
 								{ type: "button", className: "btn btn-primary", onClick: this.handleClick },
 								"Search"
+							),
+							React.createElement(
+								"h4",
+								{ className: "" },
+								React.createElement(
+									"strong",
+									null,
+									"Address"
+								)
+							),
+							React.createElement("input", { type: "text", className: "form-control text-center", id: "address", onChange: this.handleChange, ref: "address", required: true }),
+							React.createElement("br", null),
+							React.createElement(
+								"h4",
+								{ className: "" },
+								React.createElement(
+									"strong",
+									null,
+									"Lat"
+								)
+							),
+							React.createElement("input", { type: "text", className: "form-control text-center", id: "lat", onChange: this.handleChange, ref: "lat", required: true }),
+							React.createElement("br", null),
+							React.createElement(
+								"h4",
+								{ className: "" },
+								React.createElement(
+									"strong",
+									null,
+									"Lng"
+								)
+							),
+							React.createElement("input", { type: "text", className: "form-control text-center", id: "lng", onChange: this.handleChange, ref: "lng", required: true }),
+							React.createElement("br", null),
+							React.createElement(
+								"button",
+								{ type: "button", className: "btn btn-primary", onClick: this.handleMap },
+								"Get Map"
 							)
 						)
 					)
@@ -20209,8 +20303,512 @@
 
 	'use strict';
 
+	// Include React
+	var React = __webpack_require__(1);
+
+	// This is the map component
+	var Map = React.createClass({
+		displayName: 'Map',
+
+		// Here we set a generic state associated with the text being searched for
+		getInitialState: function getInitialState() {
+			return {
+				styledMapType: ""
+			};
+		},
+		// var styledMapType;
+		//
+		initMap: function initMap() {
+			// Create a new StyledMapType object, passing it an array of styles,
+			// and the name to be displayed on the map type control.
+			var styledMapType = new google.maps.StyledMapType([{ elementType: 'geometry', stylers: [{ color: '#ebe3cd' }] }, { elementType: 'labels.text.fill', stylers: [{ color: '#523735' }] }, { elementType: 'labels.text.stroke', stylers: [{ color: '#f5f1e6' }] }, {
+				featureType: 'administrative',
+				elementType: 'geometry.stroke',
+				stylers: [{ color: '#c9b2a6' }]
+			}, {
+				featureType: 'administrative.land_parcel',
+				elementType: 'geometry.stroke',
+				stylers: [{ color: '#dcd2be' }]
+			}, {
+				featureType: 'administrative.land_parcel',
+				elementType: 'labels.text.fill',
+				stylers: [{ color: '#ae9e90' }]
+			}, {
+				featureType: 'landscape.natural',
+				elementType: 'geometry',
+				stylers: [{ color: '#dfd2ae' }]
+			}, {
+				featureType: 'poi',
+				elementType: 'geometry',
+				stylers: [{ color: '#dfd2ae' }]
+			}, {
+				featureType: 'poi',
+				elementType: 'labels.text.fill',
+				stylers: [{ color: '#93817c' }]
+			}, {
+				featureType: 'poi.park',
+				elementType: 'geometry.fill',
+				stylers: [{ color: '#a5b076' }]
+			}, {
+				featureType: 'poi.park',
+				elementType: 'labels.text.fill',
+				stylers: [{ color: '#447530' }]
+			}, {
+				featureType: 'road',
+				elementType: 'geometry',
+				stylers: [{ color: '#f5f1e6' }]
+			}, {
+				featureType: 'road.arterial',
+				elementType: 'geometry',
+				stylers: [{ color: '#fdfcf8' }]
+			}, {
+				featureType: 'road.highway',
+				elementType: 'geometry',
+				stylers: [{ color: '#f8c967' }]
+			}, {
+				featureType: 'road.highway',
+				elementType: 'geometry.stroke',
+				stylers: [{ color: '#e9bc62' }]
+			}, {
+				featureType: 'road.highway.controlled_access',
+				elementType: 'geometry',
+				stylers: [{ color: '#e98d58' }]
+			}, {
+				featureType: 'road.highway.controlled_access',
+				elementType: 'geometry.stroke',
+				stylers: [{ color: '#db8555' }]
+			}, {
+				featureType: 'road.local',
+				elementType: 'labels.text.fill',
+				stylers: [{ color: '#806b63' }]
+			}, {
+				featureType: 'transit.line',
+				elementType: 'geometry',
+				stylers: [{ color: '#dfd2ae' }]
+			}, {
+				featureType: 'transit.line',
+				elementType: 'labels.text.fill',
+				stylers: [{ color: '#8f7d77' }]
+			}, {
+				featureType: 'transit.line',
+				elementType: 'labels.text.stroke',
+				stylers: [{ color: '#ebe3cd' }]
+			}, {
+				featureType: 'transit.station',
+				elementType: 'geometry',
+				stylers: [{ color: '#dfd2ae' }]
+			}, {
+				featureType: 'water',
+				elementType: 'geometry.fill',
+				stylers: [{ color: '#b9d3c2' }]
+			}, {
+				featureType: 'water',
+				elementType: 'labels.text.fill',
+				stylers: [{ color: '#92998d' }]
+			}], { name: 'Styled Map' });
+			this.setState({
+				styledMapType: styledMapType
+			});
+		},
+		displayMap: function displayMap() {},
+		displayRoute: function displayRoute(origin, destination, service, display) {
+			service.route({
+				origin: origin,
+				destination: destination,
+				travelMode: 'DRIVING',
+				avoidTolls: true
+			}, function (response, status) {
+				if (status === 'OK') {
+					display.setDirections(response);
+				} else {
+					alert('Could not display directions due to: ' + status);
+				}
+			});
+		},
+
+		computeTotalDistance: function computeTotalDistance(result) {
+			var total = 0;
+			var myroute = result.routes[0];
+			for (var i = 0; i < myroute.legs.length; i++) {
+				total += myroute.legs[i].distance.value;
+			}
+			total = total / 1000;
+			//   document.getElementById('total').innerHTML = total + ' km';
+			this.refs.total.innerHTML;
+		},
+
+		handleArticle: function handleArticle(event) {
+			// this.props.addArticle('title', 'url', 'date');
+			var title = event.target.getAttribute('data-title');
+			var url = event.target.getAttribute('data-url');
+			var date = event.target.getAttribute('data-date');
+			this.props.addArticle(title, url, date);
+		},
+
+		generateMap: function generateMap() {
+			// const script = document.createElement("script");
+			//
+			// script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyBafXeEZdeN3wqsxir8ca5e8DhkMwuBmrI&callback=initMap";
+			// script.async = true;
+			//
+			// document.body.appendChild(script);
+
+			var newLocation = {
+				address: this.props.address,
+				lat: this.props.lat,
+				lng: this.props.lng
+			};
+
+			var currentURL = window.location.origin;
+
+			// Create a map object, and include the MapTypeId to add
+			// to the map type control.
+			var map = new google.maps.Map(document.getElementById('mapOutput'), {
+				zoom: 11,
+				center: { lat: srcLat, lng: srcLng },
+				mapTypeControlOptions: {
+					mapTypeIds: ['roadmap', 'satellite', 'hybrid', 'terrain', 'styled_map']
+				}
+			});
+
+			//Associate the styled map with the MapTypeId and set it to display.
+			map.mapTypes.set('styled_map', styledMapType);
+			map.setMapTypeId('styled_map');
+
+			// Construct the circle for each value in citymap.
+			// Note: We scale the area of the circle based on the population.
+			// Add the circle for this city to the map.
+			var cityCircle = new google.maps.Circle({
+				strokeColor: '#7CFC00',
+				strokeOpacity: 0.8,
+				strokeWeight: 2,
+				fillColor: '#7CFC00',
+				fillOpacity: 0.35,
+				map: map,
+				center: { lat: srcLat, lng: srcLng },
+				radius: 1000
+			});
+			var cityMiddleCircle = new google.maps.Circle({
+				strokeColor: '#00CED1',
+				strokeOpacity: 0.8,
+				strokeWeight: 2,
+				fillColor: '#00CED1',
+				fillOpacity: 0.10,
+				map: map,
+				center: { lat: srcLat, lng: srcLng },
+				radius: 3000
+			});
+			var cityOuterCircle = new google.maps.Circle({
+				strokeColor: '#FF6347',
+				strokeOpacity: 0.8,
+				strokeWeight: 2,
+				fillColor: '#FF6347',
+				fillOpacity: 0.10,
+				map: map,
+				center: { lat: srcLat, lng: srcLng },
+				radius: 5000
+			});
+
+			// Draggable directional map icons
+			var directionsService = new google.maps.DirectionsService();
+			var directionsDisplay = new google.maps.DirectionsRenderer({
+				draggable: true,
+				map: map,
+				panel: document.getElementById('rightPanel')
+			});
+
+			directionsDisplay.addListener('directions_changed', function () {
+				computeTotalDistance(directionsDisplay.getDirections());
+			});
+
+			displayRoute({ lat: srcLat, lng: srcLng }, { lat: dstLat, lng: dstLng }, directionsService, directionsDisplay);
+
+			// // Information Window
+			// for (var i = 0; i < data.length; i++) {
+			//     var address = data[i].address;
+			//     var lat = data[i].lat;
+			//     var lng = data[i].lng;
+			//     var locationType = data[i].locationType;
+			//     var name = data[i].name;
+			//     var choiceHash = data[i].choiceHash;
+			//     contentHtml = '<div id="content">'+
+			//         '<div id="siteNotice">'+
+			//         '</div>'+
+			//         '<h4 id="firstHeading" class="firstHeading">' + name + '</h4>'+
+			//         '<div id="bodyContent">'+
+			//         '<p><b>' + address + '</b></p>' +
+			//         '<p>' + locationType.replace(/_/g, " ") + '</p>' +
+			//         '</div>'+
+			//         '</div>';
+			//
+			//     marker = new google.maps.Marker({
+			//       position: {lat: lat, lng: lng},
+			//       map: map,
+			//       title: name,
+			//       icon: '/assets/img/map/' + locationType + '.png',
+			//       animation: google.maps.Animation.DROP
+			//     });
+			//
+			//     marker.content = contentHtml;
+			//
+			//     var infoWindow = new google.maps.InfoWindow();
+			//     google.maps.event.addListener(marker, 'click', function () {
+			//         infoWindow.setContent(this.content);
+			//         infoWindow.open(this.getMap(), this);
+			//     });
+			//
+			// }
+			// $('#mapModal').modal('show');
+			// $('#mapModal').on('shown.bs.modal', function() {
+			//   var currentCenter = map.getCenter();  // Get current center before resizing
+			//   google.maps.event.trigger(map, "resize");
+			//   map.setCenter(currentCenter); // Re-set previous center
+			//   map.setZoom(13);
+			// });
+		},
+		//Here we render the function
+		render: function render() {
+
+			return React.createElement(
+				'div',
+				{ className: 'panel panel-default' },
+				React.createElement(
+					'div',
+					{ className: 'panel-heading' },
+					React.createElement(
+						'h3',
+						{ className: 'panel-title text-center' },
+						'Map Results'
+					)
+				),
+				React.createElement(
+					'div',
+					{ className: 'panel-body', style: { 'height': '200px', 'overflow': 'scroll' } },
+					React.createElement(
+						'div',
+						{ className: 'box-header with-border' },
+						React.createElement(
+							'button',
+							{ type: 'button', className: 'close', 'data-dismiss': 'modal' },
+							'\xD7'
+						),
+						React.createElement(
+							'h4',
+							{ className: 'box-title' },
+							'Safezone Locations'
+						)
+					),
+					React.createElement(
+						'div',
+						{ className: 'box-body' },
+						React.createElement('div', { id: 'mapOutput', className: 'mapOutput' }),
+						React.createElement(
+							'div',
+							{ id: 'rightPanel', className: 'rightPanel' },
+							React.createElement(
+								'p',
+								null,
+								'Total Distance: ',
+								React.createElement('span', { id: 'total' })
+							)
+						)
+					),
+					React.createElement('div', { className: 'box-footer no-padding text-center' })
+				)
+			);
+		}
+	});
+
+	// Export the component back for use in other files
+	module.exports = Map;
+
+/***/ },
+/* 164 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	exports.wrapper = undefined;
+
+	var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
+
+	var _react = __webpack_require__(1);
+
+	var _react2 = _interopRequireDefault(_react);
+
+	var _reactDom = __webpack_require__(158);
+
+	var _reactDom2 = _interopRequireDefault(_reactDom);
+
+	var _GoogleApi = __webpack_require__(165);
+
+	var _GoogleApi2 = _interopRequireDefault(_GoogleApi);
+
+	function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+	function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
+
+	function _possibleConstructorReturn(self, call) { if (!self) { throw new ReferenceError("this hasn't been initialised - super() hasn't been called"); } return call && (typeof call === "object" || typeof call === "function") ? call : self; }
+
+	function _inherits(subClass, superClass) { if (typeof superClass !== "function" && superClass !== null) { throw new TypeError("Super expression must either be null or a function, not " + typeof superClass); } subClass.prototype = Object.create(superClass && superClass.prototype, { constructor: { value: subClass, enumerable: false, writable: true, configurable: true } }); if (superClass) Object.setPrototypeOf ? Object.setPrototypeOf(subClass, superClass) : subClass.__proto__ = superClass; }
+
+	// import cache from './utils/cache'
+
+
+	var defaultMapConfig = {};
+	var wrapper = exports.wrapper = function wrapper(options) {
+	  return function (WrappedComponent) {
+	    var apiKey = options.apiKey;
+	    var libraries = options.libraries || ['places'];
+
+	    var Wrapper = function (_React$Component) {
+	      _inherits(Wrapper, _React$Component);
+
+	      function Wrapper(props, context) {
+	        _classCallCheck(this, Wrapper);
+
+	        var _this = _possibleConstructorReturn(this, (Wrapper.__proto__ || Object.getPrototypeOf(Wrapper)).call(this, props, context));
+
+	        _this.state = {
+	          loaded: false,
+	          map: null,
+	          google: null
+	        };
+	        return _this;
+	      }
+
+	      _createClass(Wrapper, [{
+	        key: 'componentDidMount',
+	        value: function componentDidMount() {
+	          var _this2 = this;
+
+	          var refs = this.refs;
+	          this.scriptCache.google.onLoad(function (err, tag) {
+	            var maps = window.google.maps;
+	            var props = Object.assign({}, _this2.props, {
+	              loaded: _this2.state.loaded
+	            });
+
+	            var mapRef = refs.map;
+
+	            var node = _reactDom2.default.findDOMNode(mapRef);
+	            var center = new maps.LatLng(_this2.props.lat, _this2.props.lng);
+
+	            var mapConfig = Object.assign({}, defaultMapConfig, {
+	              center: center, zoom: _this2.props.zoom
+	            });
+
+	            _this2.map = new maps.Map(node, mapConfig);
+
+	            _this2.setState({
+	              loaded: true,
+	              map: _this2.map,
+	              google: window.google
+	            });
+	          });
+	        }
+	      }, {
+	        key: 'componentWillMount',
+	        value: function componentWillMount() {
+	          this.scriptCache = cache({
+	            google: (0, _GoogleApi2.default)({
+	              apiKey: apiKey,
+	              libraries: libraries
+	            })
+	          });
+	        }
+	      }, {
+	        key: 'render',
+	        value: function render() {
+	          var props = Object.assign({}, this.props, {
+	            loaded: this.state.loaded,
+	            map: this.state.map,
+	            google: this.state.google,
+	            mapComponent: this.refs.map
+	          });
+	          return _react2.default.createElement(
+	            'div',
+	            null,
+	            _react2.default.createElement(WrappedComponent, props),
+	            _react2.default.createElement('div', { ref: 'map' })
+	          );
+	        }
+	      }]);
+
+	      return Wrapper;
+	    }(_react2.default.Component);
+
+	    return Wrapper;
+	  };
+	};
+
+	exports.default = wrapper;
+
+/***/ },
+/* 165 */
+/***/ function(module, exports) {
+
+	'use strict';
+
+	Object.defineProperty(exports, "__esModule", {
+	  value: true
+	});
+	var GoogleApi = exports.GoogleApi = function GoogleApi(opts) {
+	  opts = opts || {};
+
+	  var apiKey = opts.apiKey;
+	  var libraries = opts.libraries || [];
+	  var client = opts.client;
+	  var URL = 'https://maps.googleapis.com/maps/api/js';
+
+	  var googleVersion = '3.22';
+	  var script = null;
+	  var google = window.google = null;
+	  var loading = false;
+	  var channel = null;
+	  var language = null;
+	  var region = null;
+
+	  var onLoadEvents = [];
+
+	  var url = function url() {
+	    var url = URL;
+	    var params = {
+	      key: apiKey,
+	      callback: 'CALLBACK_NAME',
+	      libraries: libraries.join(','),
+	      client: client,
+	      v: googleVersion,
+	      channel: channel,
+	      language: language,
+	      region: region
+	    };
+
+	    var paramStr = Object.keys(params).filter(function (k) {
+	      return !!params[k];
+	    }).map(function (k) {
+	      return k + '=' + params[k];
+	    }).join('&');
+
+	    return url + '?' + paramStr;
+	  };
+
+	  return url();
+	};
+
+	exports.default = GoogleApi;
+
+/***/ },
+/* 166 */
+/***/ function(module, exports, __webpack_require__) {
+
+	'use strict';
+
 	// Include the axios package for performing HTTP requests (promise based alternative to request)
-	var axios = __webpack_require__(164);
+	var axios = __webpack_require__(167);
 
 	// Helper Functions (in this case the only one is runQuery)
 	var helpers = {
@@ -20243,6 +20841,14 @@
 			return axios.post('/api/delete/', { url: url }, config).then(function (results) {
 				return results;
 			});
+		},
+
+		// This gets map safezones.
+		getSafezones: function getSafezones(address, lat, lng) {
+			var config = { headers: { 'Content-type': 'application/x-www-form-urlencoded' } };
+			return axios.post('/data/safezones', { address: address, lat: lat, lng: lng }, config).then(function (results) {
+				return results;
+			});
 		}
 
 	};
@@ -20251,25 +20857,25 @@
 	module.exports = helpers;
 
 /***/ },
-/* 164 */
+/* 167 */
 /***/ function(module, exports, __webpack_require__) {
 
-	module.exports = __webpack_require__(165);
+	module.exports = __webpack_require__(168);
 
 /***/ },
-/* 165 */
+/* 168 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var defaults = __webpack_require__(166);
-	var utils = __webpack_require__(167);
-	var dispatchRequest = __webpack_require__(169);
-	var InterceptorManager = __webpack_require__(178);
-	var isAbsoluteURL = __webpack_require__(179);
-	var combineURLs = __webpack_require__(180);
-	var bind = __webpack_require__(181);
-	var transformData = __webpack_require__(173);
+	var defaults = __webpack_require__(169);
+	var utils = __webpack_require__(170);
+	var dispatchRequest = __webpack_require__(172);
+	var InterceptorManager = __webpack_require__(181);
+	var isAbsoluteURL = __webpack_require__(182);
+	var combineURLs = __webpack_require__(183);
+	var bind = __webpack_require__(184);
+	var transformData = __webpack_require__(176);
 
 	function Axios(defaultConfig) {
 	  this.defaults = utils.merge({}, defaultConfig);
@@ -20358,7 +20964,7 @@
 	axios.all = function all(promises) {
 	  return Promise.all(promises);
 	};
-	axios.spread = __webpack_require__(182);
+	axios.spread = __webpack_require__(185);
 
 	// Provide aliases for supported request methods
 	utils.forEach(['delete', 'get', 'head'], function forEachMethodNoData(method) {
@@ -20386,13 +20992,13 @@
 
 
 /***/ },
-/* 166 */
+/* 169 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(167);
-	var normalizeHeaderName = __webpack_require__(168);
+	var utils = __webpack_require__(170);
+	var normalizeHeaderName = __webpack_require__(171);
 
 	var PROTECTION_PREFIX = /^\)\]\}',?\n/;
 	var DEFAULT_CONTENT_TYPE = {
@@ -20464,7 +21070,7 @@
 
 
 /***/ },
-/* 167 */
+/* 170 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -20747,12 +21353,12 @@
 
 
 /***/ },
-/* 168 */
+/* 171 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(167);
+	var utils = __webpack_require__(170);
 
 	module.exports = function normalizeHeaderName(headers, normalizedName) {
 	  utils.forEach(headers, function processHeader(value, name) {
@@ -20765,7 +21371,7 @@
 
 
 /***/ },
-/* 169 */
+/* 172 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
@@ -20787,10 +21393,10 @@
 	        adapter = config.adapter;
 	      } else if (typeof XMLHttpRequest !== 'undefined') {
 	        // For browsers use XHR adapter
-	        adapter = __webpack_require__(170);
+	        adapter = __webpack_require__(173);
 	      } else if (typeof process !== 'undefined') {
 	        // For node use HTTP adapter
-	        adapter = __webpack_require__(170);
+	        adapter = __webpack_require__(173);
 	      }
 
 	      if (typeof adapter === 'function') {
@@ -20806,18 +21412,18 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 170 */
+/* 173 */
 /***/ function(module, exports, __webpack_require__) {
 
 	/* WEBPACK VAR INJECTION */(function(process) {'use strict';
 
-	var utils = __webpack_require__(167);
-	var buildURL = __webpack_require__(171);
-	var parseHeaders = __webpack_require__(172);
-	var transformData = __webpack_require__(173);
-	var isURLSameOrigin = __webpack_require__(174);
-	var btoa = (typeof window !== 'undefined' && window.btoa) || __webpack_require__(175);
-	var settle = __webpack_require__(176);
+	var utils = __webpack_require__(170);
+	var buildURL = __webpack_require__(174);
+	var parseHeaders = __webpack_require__(175);
+	var transformData = __webpack_require__(176);
+	var isURLSameOrigin = __webpack_require__(177);
+	var btoa = (typeof window !== 'undefined' && window.btoa) || __webpack_require__(178);
+	var settle = __webpack_require__(179);
 
 	module.exports = function xhrAdapter(resolve, reject, config) {
 	  var requestData = config.data;
@@ -20914,7 +21520,7 @@
 	  // This is only done if running in a standard browser environment.
 	  // Specifically not if we're in a web worker, or react-native.
 	  if (utils.isStandardBrowserEnv()) {
-	    var cookies = __webpack_require__(177);
+	    var cookies = __webpack_require__(180);
 
 	    // Add xsrf header
 	    var xsrfValue = config.withCredentials || isURLSameOrigin(config.url) ?
@@ -20975,12 +21581,12 @@
 	/* WEBPACK VAR INJECTION */}.call(exports, __webpack_require__(4)))
 
 /***/ },
-/* 171 */
+/* 174 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(167);
+	var utils = __webpack_require__(170);
 
 	function encode(val) {
 	  return encodeURIComponent(val).
@@ -21049,12 +21655,12 @@
 
 
 /***/ },
-/* 172 */
+/* 175 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(167);
+	var utils = __webpack_require__(170);
 
 	/**
 	 * Parse headers into an object
@@ -21092,12 +21698,12 @@
 
 
 /***/ },
-/* 173 */
+/* 176 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(167);
+	var utils = __webpack_require__(170);
 
 	/**
 	 * Transform the data for a request or a response
@@ -21118,12 +21724,12 @@
 
 
 /***/ },
-/* 174 */
+/* 177 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(167);
+	var utils = __webpack_require__(170);
 
 	module.exports = (
 	  utils.isStandardBrowserEnv() ?
@@ -21192,7 +21798,7 @@
 
 
 /***/ },
-/* 175 */
+/* 178 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -21234,7 +21840,7 @@
 
 
 /***/ },
-/* 176 */
+/* 179 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -21258,12 +21864,12 @@
 
 
 /***/ },
-/* 177 */
+/* 180 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(167);
+	var utils = __webpack_require__(170);
 
 	module.exports = (
 	  utils.isStandardBrowserEnv() ?
@@ -21317,12 +21923,12 @@
 
 
 /***/ },
-/* 178 */
+/* 181 */
 /***/ function(module, exports, __webpack_require__) {
 
 	'use strict';
 
-	var utils = __webpack_require__(167);
+	var utils = __webpack_require__(170);
 
 	function InterceptorManager() {
 	  this.handlers = [];
@@ -21375,7 +21981,7 @@
 
 
 /***/ },
-/* 179 */
+/* 182 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -21395,7 +22001,7 @@
 
 
 /***/ },
-/* 180 */
+/* 183 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -21413,7 +22019,7 @@
 
 
 /***/ },
-/* 181 */
+/* 184 */
 /***/ function(module, exports) {
 
 	'use strict';
@@ -21430,7 +22036,7 @@
 
 
 /***/ },
-/* 182 */
+/* 185 */
 /***/ function(module, exports) {
 
 	'use strict';

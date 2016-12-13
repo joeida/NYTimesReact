@@ -37,7 +37,17 @@ var helpers = {
 				return(results);
 			});
 
-	}
+	},
+
+    // This gets map safezones.
+    getSafezones: function(address, lat, lng) {
+		var config = { headers: { 'Content-type': 'application/x-www-form-urlencoded' } };
+		return axios.post('/data/safezones', {address: address, lat: lat, lng: lng}, config)
+			.then(function(results){
+				return(results);
+			});
+
+    }
 
 }
 

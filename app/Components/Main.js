@@ -5,6 +5,8 @@ var React = require('react');
 var Saved = require('./Saved');
 var Search = require('./Search');
 var Results = require('./Results');
+var Map = require('./Map');
+var GoogleApiComponent = require('./GoogleApiComponent');
 
 // Helper Function
 var helpers = require('./utils/helpers.js');
@@ -18,6 +20,10 @@ var Main = React.createClass({
 			topic: "",
 			startYear: "",
 			endYear: "", /*Note how we added in this history state variable*/
+			address: "",
+			lat: "",
+			lng: "",
+			mresults: [],
 			results: [],
 			addTitle: "",
 			addURL: "",
@@ -37,6 +43,14 @@ var Main = React.createClass({
 		})
 	},
 
+	setMap: function(address, lat, lng) {
+		this.setState({
+			address: address,
+			lat: lat,
+			lng: lng
+		})
+	},
+
 	addArticle: function(title, url, date) {
 		this.setState({
 			addTitle: title,
@@ -52,6 +66,19 @@ var Main = React.createClass({
 	},
 
 	componentDidUpdate: function(prevProps, prevState) {
+		if(prevState.address != this.state.address && prevState.lat != this.state.lat && prevState.lng != this.state.lng) {
+			console.log(this.state.address, this.state.lat, this.state.lng);
+			helpers.getSafezones(this.state.address, this.state.lat, this.state.lng)
+				.then(function(data) {
+					if (data.data != this.state.mresults) {
+						this.setState({
+							mresults: data.data
+						})
+						console.log(this.state.mresults);
+					}
+					this.refs.child.generateMap();
+				}.bind(this))
+		}
 		if(prevState.topic != this.state.topic) {
 			helpers.runQuery(this.state.topic, this.state.startYear, this.state.endYear)
 				.then(function(data) {
@@ -94,6 +121,14 @@ var Main = React.createClass({
 				}.bind(this))
 		}
 	},
+	componentWillMount: function() {
+		const script = document.createElement("script");
+
+	    script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyBafXeEZdeN3wqsxir8ca5e8DhkMwuBmrI&callback=initMap";
+	    script.async = true;
+
+	    document.body.appendChild(script);
+	},
 	componentDidMount: function(){
 	// Get the latest history.
 	helpers.getHistory()
@@ -104,11 +139,16 @@ var Main = React.createClass({
 				})
 			}
 		}.bind(this))
+	// const script = document.createElement("script");
+	//
+    // script.src = "https://maps.googleapis.com/maps/api/js?key=AIzaSyBafXeEZdeN3wqsxir8ca5e8DhkMwuBmrI&callback=initMap";
+    // script.async = true;
+	//
+    // document.body.appendChild(script);
 	},
 
 	// Here we render the function
 	render: function(){
-
 		return(
 
 			<div className="container">
@@ -126,7 +166,17 @@ var Main = React.createClass({
 					<div className="col-md-1"></div>
 					<div className="col-md-10">
 
-						<Search setSearch={this.setSearch}/>
+						<Search setSearch={this.setSearch} setMap={this.setMap}/>
+
+					</div>
+					<div className="col-md-1"></div>
+				</div>
+
+				<div className="row">
+					<div className="col-md-1"></div>
+					<div className="col-md-10">
+
+						<Map results={this.state.mresults} address={this.state.address} lat={this.state.lat} lng={this.state.lng} ref="child"/>
 
 					</div>
 					<div className="col-md-1"></div>

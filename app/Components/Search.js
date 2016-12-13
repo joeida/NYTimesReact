@@ -8,7 +8,10 @@ var Search = React.createClass({
 		return {
 			topic: "",
 			startYear: "",
-			endYear: ""
+			endYear: "",
+			address: "",
+			lat: "",
+			lng: ""
 		}
 	},
 	// This function will respond to the user input
@@ -25,6 +28,9 @@ var Search = React.createClass({
 		this.refs.topic.value = '';
 		this.refs.startYear.value = '';
 		this.refs.endYear.value = '';
+	},
+	handleMap: function() {
+		this.props.setMap(this.state.address, this.state.lat, this.state.lng);
 	},
 	// Here we render the function
 	render: function(){
@@ -51,6 +57,21 @@ var Search = React.createClass({
 								<input type="text" className="form-control text-center" id="endYear" onChange= {this.handleChange} ref="endYear" required/>
 								<br />
 								<button type="button" className="btn btn-primary" onClick={this.handleClick}>Search</button>
+
+
+								<h4 className=""><strong>Address</strong></h4>
+
+								<input type="text" className="form-control text-center" id="address" onChange= {this.handleChange} ref="address" required/>
+								<br />
+								<h4 className=""><strong>Lat</strong></h4>
+
+								<input type="text" className="form-control text-center" id="lat" onChange= {this.handleChange} ref="lat" required/>
+								<br />
+								<h4 className=""><strong>Lng</strong></h4>
+
+								<input type="text" className="form-control text-center" id="lng" onChange= {this.handleChange} ref="lng" required/>
+								<br />
+								<button type="button" className="btn btn-primary" onClick={this.handleMap}>Get Map</button>
 							</div>
 
 						</form>

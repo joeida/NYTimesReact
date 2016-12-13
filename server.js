@@ -24,8 +24,8 @@ app.use(express.static('public'));
 app.use('/', app_controller);
 
 // Database configuration with mongoose
-mongoose.connect('mongodb://heroku_3mzqbvnm:48o58l5srm9tsqpungj3o6kcd9@ds151927.mlab.com:51927/heroku_3mzqbvnm');
-// mongoose.connect('mongodb://localhost/nytreact');
+// mongoose.connect('mongodb://heroku_3mzqbvnm:48o58l5srm9tsqpungj3o6kcd9@ds151927.mlab.com:51927/heroku_3mzqbvnm');
+mongoose.connect('mongodb://localhost/nytreact');
 var db = mongoose.connection;
 
 // show any mongoose errors
